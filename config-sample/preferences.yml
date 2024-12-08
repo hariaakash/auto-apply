@@ -1,0 +1,37 @@
+resume_path: ./config/Resume1.pdf
+
+experience_level:
+  internship: false
+  entry_level: false
+  associate: true
+  mid_senior_level: true
+  director: false
+  executive: false
+
+work_type:
+  on_site: true
+  remote: false
+  hybrid: true
+
+date:
+  24_hours: true
+  week: false
+  month: false
+  all_time: false
+
+positions:
+  - Software Engineer
+  - Backend Engineer
+
+locations:
+  - London
+
+distance: 100
+
+company_blacklist:
+  - wayfair
+  - Crossover
+
+title_blacklist:
+  - word1
+  - word2
