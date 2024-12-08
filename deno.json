@@ -1,0 +1,21 @@
+{
+	"tasks": {
+		"dev": "deno run --allow-read --allow-write --allow-env --allow-sys --allow-run --allow-net src/index.ts"
+	},
+	"imports": {
+		"@std/assert": "jsr:@std/assert@1",
+		"@std/yaml": "jsr:@std/yaml@^1.0.5",
+		"rebrowser-puppeteer": "npm:rebrowser-puppeteer@^23.6.101"
+	},
+	"lint": {
+		"include": ["src/"]
+	},
+	"fmt": {
+		"useTabs": true,
+		"include": ["src/"]
+	},
+	"compilerOptions": {
+		"lib": ["dom", "ESNext"]
+	},
+	"nodeModulesDir":"auto"
+}
