@@ -4,3 +4,14 @@ export const SECRETS_YAML = './config/secrets.yml';
 
 export const PUPPETEER_USER_DATA_DIR = "./puppeteer-local";
 export const PUPPETEER_EXECUTABLE_PATH = "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary";
+
+
+// DON'T TOUCH
+export const LINKEDIN_URLS = {
+	base: "https://www.linkedin.com",
+	login: "https://www.linkedin.com/login",
+	feed: "https://www.linkedin.com/feed",
+	job: "https://www.linkedin.com/jobs/search",
+};
+
+export const LINKEDIN_JOB_STATES = ['Applied', 'Viewed', 'New'];
