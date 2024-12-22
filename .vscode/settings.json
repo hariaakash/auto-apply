@@ -2,5 +2,6 @@
 	"deno.enable": true,
 	"cSpell.words": [
 		"rebrowser"
-	]
+	],
+	"cSpell.diagnosticLevel": "Hint",
 }

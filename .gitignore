@@ -1,3 +1,4 @@
 node_modules/
 puppeteer-local/
 config/
+data/

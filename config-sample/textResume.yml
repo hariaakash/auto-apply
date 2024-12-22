@@ -1,0 +1,40 @@
+personal_information:
+  firstname: "solid"
+  lastname: "snake"
+  date_of_birth: "12/01/1861"
+  country: "Ireland"
+  city: "Dublin"
+  zip_code: "520123"
+  address: "12 Fox road"
+  phone_prefix: "+1"
+  phone: "7819117091"
+  email: "hi@gmail.com"
+  github: "https://github.com/johndoe"
+  linkedin: "https://www.linkedin.com/in/johndoe/"
+  website: "https://www.johndoe.com/"
+
+availability:
+  notice_period: "2 weeks"
+
+salary_expectations:
+  salary_range_usd: "90000 - 110000"
+
+self_identification:
+  gender: "Male"
+  pronouns: "He/His/Him"
+  veteran: "No"
+  disability: "No"
+  ethnicity: "Asian"
+
+work_preferences:
+  remote_work: "Yes"
+  in_person_work: "Yes"
+  open_to_relocation: "Yes"
+  willing_to_complete_assessments: "Yes"
+  willing_to_undergo_drug_tests: "Yes"
+  willing_to_undergo_background_checks: "Yes"
+
+legal_authorization:
+  requires_us_sponsorship: "Yes"
+  requires_eu_sponsorship: "Yes"
+  requires_uk_sponsorship: "Yes"

@@ -1,4 +1,4 @@
-import { LinkedinJobApplicator } from "./controllers/linkedin.ts";
+import { LinkedinJobApplicator } from './controllers/linkedin.ts';
 
 (async () => {
 	try {

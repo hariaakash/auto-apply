@@ -1,4 +1,4 @@
-import { z } from "https://deno.land/x/zod/mod.ts";
+import { z } from 'https://deno.land/x/zod/mod.ts';
 
 export const workPreferencesSchema = z.object({
     resume_path: z.string(),
@@ -16,7 +16,7 @@ export const workPreferencesSchema = z.object({
         hybrid: z.boolean(),
     }),
     date: z.object({
-        "24_hours": z.boolean(),
+        '24_hours': z.boolean(),
         week: z.boolean(),
         month: z.boolean(),
         all_time: z.boolean(),
