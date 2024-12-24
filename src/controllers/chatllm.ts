@@ -72,7 +72,7 @@ export class ChatLLM extends AIAdapter {
 
         const content = await this.invoke(promptStr);
         // console.log(promptStr);
-        // console.log(content);
+        console.log(`Answer: `, content);
         const res = this.findBestMatch(content, field.options);
         return res;
     }

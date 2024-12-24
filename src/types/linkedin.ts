@@ -1,4 +1,8 @@
-export type Option = { option: string; selector: string };
+export type Option = {
+    option: string;
+    selector: string;
+    required?: boolean;
+};
 
 export enum FieldTypes {
     TEXT = 'TEXT',
@@ -8,17 +12,19 @@ export enum FieldTypes {
     NUMERIC = 'NUMERIC',
 }
 
-export interface IFormInputField {
+interface IFormBaseField {
     label: string;
-    type: FieldTypes.TEXT | FieldTypes.NUMERIC,
     selector: string;
+    required: boolean;
+}
+
+export interface IFormInputField extends IFormBaseField {
+    type: FieldTypes.TEXT | FieldTypes.NUMERIC,
 };
 
-export interface IFormOptionField {
-    label: string;
+export interface IFormOptionField extends IFormBaseField {
     type: FieldTypes.SELECT | FieldTypes.RADIO | FieldTypes.CHECKBOX,
     options: Option[];
-    selector: string;
 };
 
 export type IFormField = IFormInputField | IFormOptionField;

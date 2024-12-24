@@ -11,13 +11,13 @@ import { writeFile } from "node:fs/promises";
 
 export class LinkedinJobApplicator extends JobApplicator {
 	public async start() {
-		// await this.validateSession();
-
         if (this.getSecretsConfig.DEVTOOLS) {
             await this.dev();
-        } else {
-            await this.performSearch();
+            return ;
         }
+
+        await this.validateSession();
+        await this.performSearch();
 	}
 
 	private async validateSession(): Promise<void> {
@@ -180,7 +180,7 @@ export class LinkedinJobApplicator extends JobApplicator {
 
             // Click the appropriate button
             const buttonToClick = nextBtnElement ? nextBtnSelector : reviewBtnSelector;
-            console.log(`Step ${stepCounter}: Clicking button: ${buttonToClick}`);
+            console.log(`Step ${stepCounter}:`);
             await this.currentPage.click(buttonToClick);
 
             // Wait for the next page or step to load
@@ -244,14 +244,16 @@ export class LinkedinJobApplicator extends JobApplicator {
             const textLabelSelector = 'label';
             const textInput = await inputEl.$(textInputSelector);
             if (textInput) {
-                const [label, selector] = await Promise.all([
+                const [label, selector, required] = await Promise.all([
                     inputEl.$eval(textLabelSelector, (el) => el.innerText.trim()),
-                    textInput.evaluate((el) => el.getAttribute('id'), textInput),
+                    textInput.evaluate((el) => el.getAttribute('id')),
+                    textInput.evaluate((el) => el.required),
                 ]);
                 fields.push({
                     label,
                     type: selector?.includes('-numeric') ? FieldTypes.NUMERIC : FieldTypes.TEXT,
                     selector: `#${selector}`,
+                    required,
                 });
                 continue;
             }
@@ -267,6 +269,7 @@ export class LinkedinJobApplicator extends JobApplicator {
                         return {
                             option,
                             selector: `input[value="${option}"]`,
+                            required: input.required,
                         };
                     }),
             );
@@ -283,6 +286,7 @@ export class LinkedinJobApplicator extends JobApplicator {
                     type: FieldTypes.RADIO,
                     options: radioOptions.map((x) => ({...x, selector: `#${radioFieldsetID} ${x.selector}` })),
                     selector: radioInputSelector,
+                    required: radioOptions.some((x) => x.required),
                 });
                 continue;
             }
@@ -292,7 +296,7 @@ export class LinkedinJobApplicator extends JobApplicator {
             const selectLabelSelector = 'label span';
             const selectInput = await inputEl.$(selectInputSelector);
             if (selectInput) {
-                const [label, selectOptions] = await Promise.all([
+                const [label, selectOptions, required] = await Promise.all([
                     inputEl.$eval(selectLabelSelector, (el) => el.innerText.trim()),
                     selectInput.$$eval(
                         'option',
@@ -303,6 +307,7 @@ export class LinkedinJobApplicator extends JobApplicator {
                             })),
                         selectInputSelector // Pass the parent selector dynamically
                     ),
+                    selectInput.evaluate((el) => el.required),
                 ]);
                 const selector = `#${await (await selectInput.getProperty('id')).jsonValue()}`;
                 fields.push({
@@ -310,6 +315,7 @@ export class LinkedinJobApplicator extends JobApplicator {
                     type: FieldTypes.SELECT,
                     options: selectOptions,
                     selector,
+                    required,
                 });
                 continue;
             }
@@ -327,15 +333,19 @@ export class LinkedinJobApplicator extends JobApplicator {
             }), checkBoxOptionAttributeName);
             if (checkBoxInputs.length) {
                 const checkBoxLabelSelector = 'fieldset legend span';
-                const [label, selector] = await Promise.all([
+                const checkIsRequiredTitle = 'fieldset legend div';
+                const isInputRequiredClass = 'fb-dash-form-element__label-title--is-required';
+                const [label, selector, required] = await Promise.all([
                     inputEl.$eval(checkBoxLabelSelector, (el) => el.innerText.trim()),
                     inputEl.$eval('fieldset', (el) => `#${el.getAttribute('id')}`),
+                    inputEl.$eval(checkIsRequiredTitle, (el) => Object.values(el.classList).includes(isInputRequiredClass)),
                 ]);
                 fields.push({
                     label,
                     type: FieldTypes.CHECKBOX,
                     options: checkBoxInputs,
                     selector,
+                    required,
                 });
                 continue;
             }
@@ -346,6 +356,12 @@ export class LinkedinJobApplicator extends JobApplicator {
             console.log('No fields to handle');
             return ;
         }
+        // console.log(fields.filter((x) => x.type === FieldTypes.CHECKBOX).map((x) => ({
+        //     label: x.label,
+        //     required: x.required,
+        //     type: x.type,
+        // })));
+
         if (this.isReuseMobileAndEmail) {
             this.isReuseMobileAndEmail = true;
         } else {
@@ -389,9 +405,11 @@ export class LinkedinJobApplicator extends JobApplicator {
                 await this.currentPage.click(selector);
             } else if (field.type === FieldTypes.TEXT) {
                 const res = await this.getLLM.answerQuestionText(field);
+                console.log(`Answer: `, res);
                 await this.handleTextField(field.selector, res);
             } else if (field.type === FieldTypes.NUMERIC) {
                 const res = await this.getLLM.answerQuestionNumeric(field);
+                console.log(`Answer: `, res);
                 await this.handleTextField(field.selector, res);
             } else {
                 throw new Error('Field type not found');
@@ -474,13 +492,13 @@ export class LinkedinJobApplicator extends JobApplicator {
     public async dev() {
         const jobs: IJobCard[] = [
             {
-              "jobTitle": "GenAI Software Engineer – Senior Consultant",
-              "company": "Visa",
-              "id": "4098233356",
-              "description": "Company DescriptionVisa is a world leader in payments and technology, with over 259 billion payments transactions flowing safely between consumers, merchants, financial institutions, and government entities in more than 200 countries and territories each year. Our mission is to connect the world through the most innovative, convenient, reliable, and secure payments network, enabling individuals, businesses, and economies to thrive while driven by a common purpose – to uplift everyone, everywhere by being the best way to pay and be paid.Make an impact with a purpose-driven industry leader. Join us today and experience Life at Visa.Job DescriptionThis role requires an experienced GenAI engineer with a passion for working on LLM-based applications. The team is tasked with building key GenAI applications and scalable pipelines. The successful candidate should have a proven track record of developing multiple GenAI applications and be adept at managing the entire spectrum of GenAI application development while leading multiple workstreams.Key responsibilities include:\n- Leading and delivering specific project deliverables as a Senior GenAI Engineer\n- Providing guidance to the engineering team on building new LLM applications and leveraging existing GenAI applications\n- Improving the productivity of the engineering organization by infusing GenAI into our coding standards and practices.\n- Acting as the GenAI projects design authority\n- Shaping best practices and methodologies within the team\nThis role involves 70% GenAI and 30% Core Payments application development. The successful candidate should be open to working on payments application development to understand the current processes and suggest enhancements to improve productivity using LLM models. This position offers an excellent opportunity for a candidate with strong AI engineering credentials to increase their knowledge and experience in the payments industry.This is a hybrid position. Hybrid employees can alternate time between both remote and office. Employees in hybrid roles are expected to work from the office 2-3 set days a week (determined by leadership/site), with a general guidepost of being in the office 50% or more of the time based on business needs.QualificationsBasic Qualifications\n- 8+ years of relevant work experience with a Bachelor’s Degree or at least 5 years of experience with an Advanced Degree (e.g. Masters, MBA, JD, MD) or 2 years of work experience with a PhD, OR 11+ years of relevant work experience.\nPreferred Qualifications\n- 9 or more years of relevant work experience with a Bachelor Degree or 7 or more relevant years of experience with an Advanced Degree (e.g. Masters, MBA, JD, MD) or 3 or more years of experience with a PhD\n- Bachelor’s Degree in Computer Science, Electronics/ Electrical Engineering or a related technical discipline is required\n- Strong knowledge of AI and data technologies, with expertise in Python\n- Experience in using machine learning technologies such as TensorFlow, PyTorch, and Scikit-learn is a plus.\n- Demonstrated experience in developing scalable AI pipelines and integrating models into real-time systems.\n- Proven track record of managing and executing multiple high-impact LLM based projects, balancing delivery speed with quality.\n- Able to showcase the productivity improvement by collecting relevant metrics.\n- Self-driven and act as a leader in the GenAI space within the department.\n- Act as a mentor to the rest of the developers to leverage existing and new GenAI toolsets.\n- Ability to communicate complex AI concepts to both technical and non-technical stakeholders.\n- Spearhead development, embedding, automation, and operation of scalable AI applications.\n- Ensure technical quality and reliability of AI solutions through rigorous testing, validation, and implementing frameworks for scalable data ingestion.\n- Optimize AI application performance and efficiency.\n- Collaborate across teams to drive AI innovation, while expanding your expertise within an experienced, inclusive, and international team.\n- Extensive relevant mid level work experience\n- Proficient in Python, software development, and application of AI models.\n- Highly skilled in realizing the full potential of LLM-based AI frameworks.\n- Electronic payment systems experience is preferred\n- Hands on experience on Golang is preferred\n- Ability to take ownership of open ended and highly complex problems and drive them to completion\n- Ability to work effectively on multiple concurrent assignments with both AI and non-AI applications projects\n- Excellent communication skills, with examples of influencing, listening actively and negotiating within a team environment to effectively advocate for Software Engineering best practice within the department and communicate design decisions effectively\n- Positive attitude, friendly to others, encouraging of co-operation, honesty, and respectfulness in the workplace\n- Collaborative mindset, with an ability to empathise with colleagues and establish relationships\n- Flexibility, self-motivated, high work standards, attention to detail, ability to perform as a leader of a team\n- Willingness and desire to learn new skills and take on new tasks and initiatives.\n- Proven ability to multi-task independently in a fast-paced environment and handle multiple competing priorities with minimal direction from management.\n- Should be process oriented and possess good planning and organizational skills\nAdditional InformationVisa is an EEO Employer. Qualified applicants will receive consideration for employment without regard to race, color, religion, sex, national origin, sexual orientation, gender identity, disability or protected veteran status. Visa will also consider for employment qualified applicants with criminal histories in a manner consistent with EEOC guidelines and applicable local law.",
-              "state": "Viewed",
+              "jobTitle": "Engineer",
+              "company": "IC Resources",
+              "id": "4104794515",
+              "description": "Role: Defence Systems Engineer\nLocation: Stevenage (4-5 days onsite)\nThe Company:\nMy client is a cutting-edge leader in advanced defence technology. This global company specializes in creating state-of-the-art missile systems and defence solutions, safeguarding nations worldwide with its unwavering commitment to precision and innovation. With a legacy of excellence, it continues to shape the future of defence technology, ensuring security and resilience in an ever-evolving world.\nThe Role:\nAs part of our clients' Systems Design Emerging Portfolio &amp; Capability function you will deliver systems engineering expertise to projects focusing on the front end of the product life cycle, designing the latest Complex Weapons capabilities for the UK and partner nation Armed Forces in response to advanced threats in all domains (Air, Land &amp; Sea).\nWhether embedded in a multi-disciplinary team, or leading an individual work package, you will gain broad engineering experience, engaging stakeholders, coordinating technology specialists, and developing advanced systems engineering techniques.\nYour Experience:\n- Strong understanding of MATLAB and Simulink\n- Requirements and Use Case analysis\n- Concept assessment and design trade studies\n- System architecture design and functional modelling\n- Performance assessment and systems behaviour analysis\n- Verification, Validation and Certification\n- Model based engineering techniques, including MBSE - Model Based Systems Engineering\n- DOORS / Rhapsody (or similar)\n- Knowledge of air platforms (Typhoon / F35 etc.)\n- MIL-STD1760/1553 + Avionics knowledge would be beneficial\n- Some understanding of electronics/firmware/software\nPerks/ Benefits:\n- £45,000 - £55,000\n- Annual Pay Review\n- £2,500 Bonus\n- 14% Pension\n- 25 Days Annual Leave + Bank Holidays\n- 6x Annual Salary Life Assurance Cover\n- Access to world class training and development programme\n- Paid Over-Time",
+              "state": "New",
               "meta": {},
-            },
+            }
         ];
         await this.processJobs(jobs);
 
