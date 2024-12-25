@@ -6,14 +6,14 @@
  * @returns Array of regex patterns as strings.
  */
 export function lookAheadPatterns(keywordList: string[]): string[] {
-    return keywordList.map(term => {
-        // Split term into individual words
-        const words = term.split(/\s+/);
-        // Create a lookahead for each word to ensure it appears independently
-        const lookaheads = words.map(word => `(?=.*\\b${escapeRegExp(word)}\\b)`);
-        // Combine lookaheads into a single regex pattern
-        return lookaheads.join('');
-    });
+	return keywordList.map((term) => {
+		// Split term into individual words
+		const words = term.split(/\s+/);
+		// Create a lookahead for each word to ensure it appears independently
+		const lookaheads = words.map((word) => `(?=.*\\b${escapeRegExp(word)}\\b)`);
+		// Combine lookaheads into a single regex pattern
+		return lookaheads.join("");
+	});
 }
 
 /**
@@ -23,6 +23,5 @@ export function lookAheadPatterns(keywordList: string[]): string[] {
  * @returns The escaped string.
  */
 function escapeRegExp(text: string): string {
-    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
-

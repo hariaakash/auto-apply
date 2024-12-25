@@ -1,4 +1,4 @@
-import { LinkedinJobApplicator } from './controllers/linkedin.ts';
+import { LinkedinJobApplicator } from "./controllers/linkedin.ts";
 
 (async () => {
 	try {
@@ -6,7 +6,7 @@ import { LinkedinJobApplicator } from './controllers/linkedin.ts';
 
 		await applicator.initialize();
 		await applicator.start();
-		console.log('end of life');
+		console.log("end of life");
 	} catch (err) {
 		console.log(err);
 	}
