@@ -6,6 +6,8 @@ export const TEXT_RESUME_YAML = "./config/textResume.yml";
 export const PUPPETEER_USER_DATA_DIR = "./puppeteer-local";
 export const PUPPETEER_EXECUTABLE_PATH =
 	"/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary";
+	// export const PUPPETEER_EXECUTABLE_PATH =
+	// 	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 
 // DON'T TOUCH
 export const LINKEDIN_URLS = {

@@ -127,6 +127,7 @@ export class ChatLLM extends AIAdapter {
 			const extractedNumber = this.extractNumberFromString(content);
 			return String(extractedNumber);
 		} catch (_error) {
+			console.log(_error);
 			console.warn(
 				`Failed to extract number, using default experience: ${defaultExperience}`,
 			);

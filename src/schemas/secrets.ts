@@ -2,6 +2,7 @@ import { z } from "https://deno.land/x/zod/mod.ts";
 
 export const secretsSchema = z.object({
 	DEVTOOLS: z.boolean().default(false),
+	CLOSE_BLACKLISTED_JOBS: z.boolean().default(false),
 
 	LLM_MODEL_TYPE: z.string(),
 	LLM_MODEL: z.string(),

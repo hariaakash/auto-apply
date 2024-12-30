@@ -24,7 +24,7 @@ export class AIAdapter {
 			});
 		} else if (modelType === SUPPORTED_LLM_TYPES.OPENAI) {
 			this.model = new ChatOpenAI({
-				model: modelType,
+				model,
 				temperature: this.temperature,
 				apiKey,
 			});

@@ -27,6 +27,7 @@ export interface IJobCard {
 	state: string;
 	// deno-lint-ignore no-explicit-any
 	meta: any;
+	selector: string;
 }
 
 export interface IBlacklistedJobCard extends IJobCard {

@@ -60,8 +60,8 @@ export class LinkedinJobApplicator extends JobApplicator {
 		const jobs = await this.extractJobs();
 		await this.processJobs(jobs);
 
-		// WIP, search till page index 1
-		if (pageNumber === 1) {
+		// WIP, search till page index 0
+		if (pageNumber === 0) {
 			return Promise.resolve();
 		}
 
@@ -75,7 +75,7 @@ export class LinkedinJobApplicator extends JobApplicator {
 		const itemsEl = await this.currentPage.$$(itemSelector);
 
 		const items: IJobCard[] = [];
-		for (const itemEl of itemsEl) {
+		for (const [index, itemEl] of itemsEl.entries()) {
 			await itemEl.scrollIntoView();
 			await itemEl.click();
 			await sleep(1000);
@@ -128,6 +128,7 @@ export class LinkedinJobApplicator extends JobApplicator {
 					? jobState
 					: LINKEDIN_JOB_STATES[2],
 				meta: {},
+				selector: `${itemSelector}:nth-child(${index + 1})`,
 			});
 		}
 		return items;
@@ -138,6 +139,14 @@ export class LinkedinJobApplicator extends JobApplicator {
 		const { readyToProcess, blacklisted, alreadyApplied } = this.filterJobs(
 			jobs,
 		);
+		// Ignore blacklisted jobs for next time
+		if (this.getSecretsConfig.CLOSE_BLACKLISTED_JOBS && blacklisted.length) {
+			console.log(`Closing blacklisted jobs: ${blacklisted.length}`);
+			for (const job of blacklisted) {
+				const closeCardSelector = `.job-card-container__action`;
+				await this.currentPage.click(`${job.selector} ${closeCardSelector}`);
+			}
+		}
 		const { processed, unprocessed } = await this.applyToJobs(readyToProcess);
 		// store these data WIP
 		await writeFile(
@@ -216,7 +225,7 @@ export class LinkedinJobApplicator extends JobApplicator {
 			const buttonToClick = nextBtnElement
 				? nextBtnSelector
 				: reviewBtnSelector;
-			console.log(`Step ${stepCounter}:`);
+			console.log(`Click next button from ${stepCounter}:`);
 			await this.currentPage.click(buttonToClick);
 
 			// Wait for the next page or step to load
@@ -406,7 +415,8 @@ export class LinkedinJobApplicator extends JobApplicator {
 					inputEl.$eval("fieldset", (el) => `#${el.getAttribute("id")}`),
 					inputEl.$eval(
 						checkIsRequiredTitle,
-						(el) => Object.values(el.classList).includes(isInputRequiredClass),
+						(el, isInputRequiredClass) => Object.values(el.classList).includes(isInputRequiredClass),
+						isInputRequiredClass,
 					),
 				]);
 				fields.push({
@@ -431,9 +441,8 @@ export class LinkedinJobApplicator extends JobApplicator {
 		//     type: x.type,
 		// })));
 
-		if (this.isReuseMobileAndEmail) {
+		if (!this.isReuseMobileAndEmail) {
 			this.isReuseMobileAndEmail = true;
-		} else {
 			console.log("handle email, country and mobile");
 			// Handle email - Not required for now
 			// Handle country code
@@ -467,9 +476,24 @@ export class LinkedinJobApplicator extends JobApplicator {
 			}
 		}
 
+		// Handle city
+		const cityEl = fields.find((x) =>
+			x.label === "City\nCity"
+		) as IFormInputField | undefined;
+		console.log(fields);
+		if (cityEl) {
+			console.log('City element found');
+			// await this.currentPage.click(cityEl.selector);
+			await this.currentPage.type(cityEl.selector, this.getTextResumeConfig.personal_information.city, { delay: 100 });
+			await sleep(1000);
+			await this.currentPage.waitForSelector('.basic-typeahead__triggered-content', { visible: true });
+			await this.currentPage.keyboard.press("ArrowDown");
+			await this.currentPage.keyboard.press('Enter');
+		}
+
 		const fieldsToProcess = fields.filter(
 			(x) =>
-				!["Email address", "Phone country code", "Mobile phone number"]
+				!["Email address", "Phone country code", "Mobile phone number", "First name", "Last name", "City\nCity"]
 					.includes(x.label),
 		);
 		for (const field of fieldsToProcess) {
@@ -591,11 +615,12 @@ export class LinkedinJobApplicator extends JobApplicator {
 			{
 				"jobTitle": "Engineer",
 				"company": "IC Resources",
-				"id": "4104794515",
+				"id": "4104747669",
 				"description":
 					"Role: Defence Systems Engineer\nLocation: Stevenage (4-5 days onsite)\nThe Company:\nMy client is a cutting-edge leader in advanced defence technology. This global company specializes in creating state-of-the-art missile systems and defence solutions, safeguarding nations worldwide with its unwavering commitment to precision and innovation. With a legacy of excellence, it continues to shape the future of defence technology, ensuring security and resilience in an ever-evolving world.\nThe Role:\nAs part of our clients' Systems Design Emerging Portfolio &amp; Capability function you will deliver systems engineering expertise to projects focusing on the front end of the product life cycle, designing the latest Complex Weapons capabilities for the UK and partner nation Armed Forces in response to advanced threats in all domains (Air, Land &amp; Sea).\nWhether embedded in a multi-disciplinary team, or leading an individual work package, you will gain broad engineering experience, engaging stakeholders, coordinating technology specialists, and developing advanced systems engineering techniques.\nYour Experience:\n- Strong understanding of MATLAB and Simulink\n- Requirements and Use Case analysis\n- Concept assessment and design trade studies\n- System architecture design and functional modelling\n- Performance assessment and systems behaviour analysis\n- Verification, Validation and Certification\n- Model based engineering techniques, including MBSE - Model Based Systems Engineering\n- DOORS / Rhapsody (or similar)\n- Knowledge of air platforms (Typhoon / F35 etc.)\n- MIL-STD1760/1553 + Avionics knowledge would be beneficial\n- Some understanding of electronics/firmware/software\nPerks/ Benefits:\n- £45,000 - £55,000\n- Annual Pay Review\n- £2,500 Bonus\n- 14% Pension\n- 25 Days Annual Leave + Bank Holidays\n- 6x Annual Salary Life Assurance Cover\n- Access to world class training and development programme\n- Paid Over-Time",
 				"state": "New",
 				"meta": {},
+				"selector": "",
 			},
 		];
 		await this.processJobs(jobs);
