@@ -139,15 +139,9 @@ export class LinkedinJobApplicator extends JobApplicator {
 		const { readyToProcess, blacklisted, alreadyApplied } = this.filterJobs(
 			jobs,
 		);
-		// Ignore blacklisted jobs for next time
-		if (this.getSecretsConfig.CLOSE_BLACKLISTED_JOBS && blacklisted.length) {
-			console.log(`Closing blacklisted jobs: ${blacklisted.length}`);
-			for (const job of blacklisted) {
-				const closeCardSelector = `.job-card-container__action`;
-				await this.currentPage.click(`${job.selector} ${closeCardSelector}`);
-			}
-		}
 		const { processed, unprocessed } = await this.applyToJobs(readyToProcess);
+		// Ignore blacklisted and processed jobs for next time
+		await this.closeJobCard([...blacklisted, ...processed]);
 		// store these data WIP
 		await writeFile(
 			`./data/applied_${Date.now()}.json`,
@@ -637,5 +631,14 @@ export class LinkedinJobApplicator extends JobApplicator {
 		//     },
 		// ];
 		// await this.getLLM.answerQuestionFromOptions(fields[0]);
+	}
+	private async closeJobCard(jobs: IJobCard[]): Promise<void> {
+		if (this.getSecretsConfig.CLOSE_BLACKLISTED_JOBS && jobs.length) {
+			console.log(`Closing jobs: ${jobs.length}`);
+			for (const job of jobs) {
+				const closeCardSelector = `.job-card-container__action`;
+				await this.currentPage.click(`${job.selector} ${closeCardSelector}`);
+			}
+		}
 	}
 }
